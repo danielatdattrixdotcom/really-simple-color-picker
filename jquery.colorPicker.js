@@ -54,8 +54,9 @@
             hexLabel: $('<label for="colorPicker_hex">Color</label>'),
             hexField: $('<input type="text" id="colorPicker_hex" />')
         },
-        transparent     = "clear",
-        lastColor;
+        transparent     = "CLEAR",
+        lastColor,
+        currentTab;
 
     /**
      * Create our colorPicker function
@@ -67,45 +68,77 @@
                 opts         = $.extend({}, $.fn.colorPicker.defaults, options),
                 defaultColor = (opts.pickerDefault) ? opts.pickerDefault : opts.tabs[0].colors[0],
                 newControl   = templates.control.clone(),
-                newGroups    = templates.tabs.clone(),
+                newTabs    = templates.tabs.clone(),
                 newSwatches  = templates.swatches.clone(),
                 newPalette   = templates.palette.clone().attr('id', 'colorPicker_palette-' + cItterate),
                 newHexLabel  = templates.hexLabel.clone(),
                 newHexField  = templates.hexField.clone(),
-                paletteId    = newPalette[0].id,
-                swatch;
-            newGroups.appendTo(newPalette);
+                paletteId    = newPalette[0].id;
+
+            newTabs.appendTo(newPalette);
 
             $.each(opts.tabs, function (i) {
-                tab = templates.tab.clone();
+                var tab = templates.tab.clone();
                 tab.text(opts.tabs[i].name);
-                if (i == 0) {
-                    tab.addClass('active');
-                }
-                tab.appendTo(newGroups);
+
+                tab.bind('click', function() {
+                    currentTab = $(this);
+                    $(this).parent().attr('activeTab',$(this).text());
+
+                    $(this).parent().children().each(function(){
+                        if ($(this).text() != $(this).parent().attr('activeTab')) {
+                            $(this).removeClass('active');
+                        } else {
+                            $(this).addClass('active');
+                        }
+                    })
+
+                    $(this).parent().parent().children().filter('.colorPicker-swatches').children().each(function() {
+                        if ($(this).attr('tab') == currentTab.text()) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                });
+
+                tab.appendTo(newTabs);
 
                 tab_colors = opts.tabs[i].colors;
 
                 $.each(tab_colors, function (i) {
                     swatch = templates.swatch.clone();
+                    swatch.attr('tab',tab.text());
 
-                    if (tab_colors[i] === transparent) {
-                        swatch.addClass(transparent).text('X');
+                    if (this[0] === transparent) {
+                        swatch.addClass('transparentSwatch');
                         swatch.attr('colorstring',this[0]);
 
-                        $.fn.colorPicker.bindPalette(newHexField, swatch, transparent);
-
+                        $.fn.colorPicker.bindPalette(newHexField, swatch);
                     } else {
                         swatch.css("background-color", "#" + this[1]);
                         swatch.attr('colorstring',this[0]);
 
                         $.fn.colorPicker.bindPalette(newHexField, swatch);
-
                     }
 
+                    if (this[0] == defaultColor[0]) {
+                        currentTab = $(tab);
+                    }
                     swatch.appendTo(newSwatches);
                 });
             });
+
+            newSwatches.children().each(function(){
+                 if (currentTab.text() == $(this).attr('tab')) {
+                    $(this).show();
+                 } else {
+                    $(this).hide();
+                 }
+             });
+
+             currentTab.click();
+
             newSwatches.appendTo(newPalette);
 
             newHexLabel.attr('for', 'colorPicker_hex-' + cItterate);
@@ -145,6 +178,11 @@
                 element.next(".colorPicker-picker").css(
                     "background-color", $.fn.colorPicker.toHex($(this).attr("hexcolor"))
                 );
+                if (element.val() == transparent) {
+                    element.next(".colorPicker-picker").addClass('transparentSwatch');
+                } else {
+                    element.next(".colorPicker-picker").removeClass('transparentSwatch');
+                }
             });
 
             // Hide the original input.
@@ -262,6 +300,13 @@
         **/
         changeColor : function (value, hex_value) {
             selectorOwner.css("background-color", hex_value);
+
+            if (value == transparent) {
+                selectorOwner.addClass('transparentSwatch');
+            } else {
+                selectorOwner.removeClass('transparentSwatch');
+            }
+
             selectorOwner.prev("input").attr("hexcolor",hex_value);
             selectorOwner.prev("input").val(value).change();
 
@@ -271,12 +316,15 @@
         /**
          * Bind events to the color palette swatches.
         */
-        bindPalette : function (paletteInput, element, color) {
-            color = element.attr('colorstring');
-            color_hex = $.fn.colorPicker.toHex(element.css("background-color"));
+        bindPalette : function (paletteInput, element) {
+            var color = element.attr('colorstring');
+            var color_hex = $.fn.colorPicker.toHex(element.css("background-color"));
 
             element.bind({
                 click : function (ev) {
+                    color = $(this).attr('colorstring');
+                    color_hex = $.fn.colorPicker.toHex($(this).css("background-color"));
+
                     lastColor = color;
 
                     $.fn.colorPicker.changeColor(color, color_hex);
@@ -313,20 +361,7 @@
      *
     **/
     $.fn.colorPicker.defaults = {
-        // colorPicker default selected color.
-        //pickerDefault : ["WHITE","FFFFFF"],
 
-        // Default color set.
-        /*colors : [
-            '000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
-            '808000', '008000', '008080', '0000FF', '666699', '808080', 'FF0000', 'FF9900',
-            '99CC00', '339966', '33CCCC', '3366FF', '800080', '999999', 'FF00FF', 'FFCC00',
-            'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99',
-            'FFFF99', 'CCFFFF', '99CCFF', 'FFFFFF'
-        ],*/
-
-        // If we want to simply add more colors to the default set, use addColors.
-        addColors : []
     };
 
 })(jQuery);

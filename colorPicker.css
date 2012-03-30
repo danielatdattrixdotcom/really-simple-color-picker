@@ -37,6 +37,11 @@ div.colorPicker-swatch {
   line-height: 12px;
 }
 
+div.transparentSwatch {
+    background-color: #FFFFFF;
+    background: url(clear.png) repeat top left;
+}
+
 div.colorPicker-tabs {
     width: 310px;
     margin: none;
