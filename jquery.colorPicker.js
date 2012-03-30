@@ -1,6 +1,17 @@
 /**
+ * Really Simple Color Picker in jQuery (Modified)
+ *
+ * - Multi-Palette
+ * - Strings for color values
+ *
+ * Licensed under the MIT (MIT-LICENSE.txt) licenses.
+ *
+ * Copyright (c) 2012 Daniel Anderson (www.dattrix.com)
+ */
+
+/**
  * Really Simple Color Picker in jQuery
- * 
+ *
  * Licensed under the MIT (MIT-LICENSE.txt) licenses.
  *
  * Copyright (c) 2008 Lakshan Perera (www.laktek.com)
@@ -16,7 +27,7 @@
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -24,6 +35,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
 
 (function ($) {
     /**
@@ -34,12 +46,15 @@
         cItterate       = 0,
         templates       = {
             control : $('<div class="colorPicker-picker">&nbsp;</div>'),
+            tabs : $('<div class="colorPicker-tabs"></div>'),
+            tab : $('<div class="colorPicker-tab">&nbsp;</div>'),
             palette : $('<div id="colorPicker_palette" class="colorPicker-palette" />'),
+            swatches : $('<div class="colorPicker-swatches"></div>'),
             swatch  : $('<div class="colorPicker-swatch">&nbsp;</div>'),
-            hexLabel: $('<label for="colorPicker_hex">Hex</label>'),
+            hexLabel: $('<label for="colorPicker_hex">Color</label>'),
             hexField: $('<input type="text" id="colorPicker_hex" />')
         },
-        transparent     = "transparent",
+        transparent     = "clear",
         lastColor;
 
     /**
@@ -50,48 +65,57 @@
             // Setup time. Clone new elements from our templates, set some IDs, make shortcuts, jazzercise.
             var element      = $(this),
                 opts         = $.extend({}, $.fn.colorPicker.defaults, options),
-                defaultColor = $.fn.colorPicker.toHex(
-                        (element.val().length > 0) ? element.val() : opts.pickerDefault
-                    ),
+                defaultColor = (opts.pickerDefault) ? opts.pickerDefault : opts.tabs[0].colors[0],
                 newControl   = templates.control.clone(),
+                newGroups    = templates.tabs.clone(),
+                newSwatches  = templates.swatches.clone(),
                 newPalette   = templates.palette.clone().attr('id', 'colorPicker_palette-' + cItterate),
                 newHexLabel  = templates.hexLabel.clone(),
                 newHexField  = templates.hexField.clone(),
                 paletteId    = newPalette[0].id,
                 swatch;
+            newGroups.appendTo(newPalette);
 
-            /**
-             * Build a color palette.
-            **/
-            $.each(opts.colors, function (i) {
-                swatch = templates.swatch.clone();
-
-                if (opts.colors[i] === transparent) {
-                    swatch.addClass(transparent).text('X');
-
-                    $.fn.colorPicker.bindPalette(newHexField, swatch, transparent);
-
-                } else {
-                    swatch.css("background-color", "#" + this);
-
-                    $.fn.colorPicker.bindPalette(newHexField, swatch);
-
+            $.each(opts.tabs, function (i) {
+                tab = templates.tab.clone();
+                tab.text(opts.tabs[i].name);
+                if (i == 0) {
+                    tab.addClass('active');
                 }
+                tab.appendTo(newGroups);
 
-                swatch.appendTo(newPalette);
+                tab_colors = opts.tabs[i].colors;
+
+                $.each(tab_colors, function (i) {
+                    swatch = templates.swatch.clone();
+
+                    if (tab_colors[i] === transparent) {
+                        swatch.addClass(transparent).text('X');
+                        swatch.attr('colorstring',this[0]);
+
+                        $.fn.colorPicker.bindPalette(newHexField, swatch, transparent);
+
+                    } else {
+                        swatch.css("background-color", "#" + this[1]);
+                        swatch.attr('colorstring',this[0]);
+
+                        $.fn.colorPicker.bindPalette(newHexField, swatch);
+
+                    }
+
+                    swatch.appendTo(newSwatches);
+                });
             });
+            newSwatches.appendTo(newPalette);
 
             newHexLabel.attr('for', 'colorPicker_hex-' + cItterate);
 
             newHexField.attr({
                 'id'    : 'colorPicker_hex-' + cItterate,
-                'value' : defaultColor
+                'value' : defaultColor[0]
             });
 
             newHexField.bind("keydown", function (event) {
-                if (event.keyCode === 13) {
-                    $.fn.colorPicker.changeColor($.fn.colorPicker.toHex($(this).val()));
-                }
                 if (event.keyCode === 27) {
                     $.fn.colorPicker.hidePalette(paletteId);
                 }
@@ -109,7 +133,7 @@
             /**
              * Build replacement interface for original color input.
             **/
-            newControl.css("background-color", defaultColor);
+            newControl.css("background-color", $.fn.colorPicker.toHex(defaultColor[1]));
 
             newControl.bind("click", function () {
                 $.fn.colorPicker.togglePalette($('#' + paletteId), $(this));
@@ -119,12 +143,12 @@
 
             element.bind("change", function () {
                 element.next(".colorPicker-picker").css(
-                    "background-color", $.fn.colorPicker.toHex($(this).val())
+                    "background-color", $.fn.colorPicker.toHex($(this).attr("hexcolor"))
                 );
             });
 
             // Hide the original input.
-            element.val(defaultColor).hide();
+            element.val(defaultColor[0]).hide();
 
             cItterate++;
         });
@@ -236,9 +260,9 @@
         /**
          * Update the input with a newly selected color.
         **/
-        changeColor : function (value) {
-            selectorOwner.css("background-color", value);
-
+        changeColor : function (value, hex_value) {
+            selectorOwner.css("background-color", hex_value);
+            selectorOwner.prev("input").attr("hexcolor",hex_value);
             selectorOwner.prev("input").val(value).change();
 
             $.fn.colorPicker.hidePalette();
@@ -248,13 +272,14 @@
          * Bind events to the color palette swatches.
         */
         bindPalette : function (paletteInput, element, color) {
-            color = color ? color : $.fn.colorPicker.toHex(element.css("background-color"));
+            color = element.attr('colorstring');
+            color_hex = $.fn.colorPicker.toHex(element.css("background-color"));
 
             element.bind({
                 click : function (ev) {
                     lastColor = color;
 
-                    $.fn.colorPicker.changeColor(color);
+                    $.fn.colorPicker.changeColor(color, color_hex);
                 },
                 mouseover : function (ev) {
                     lastColor = paletteInput.val();
@@ -289,16 +314,16 @@
     **/
     $.fn.colorPicker.defaults = {
         // colorPicker default selected color.
-        pickerDefault : "FFFFFF",
+        //pickerDefault : ["WHITE","FFFFFF"],
 
         // Default color set.
-        colors : [
+        /*colors : [
             '000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
             '808000', '008000', '008080', '0000FF', '666699', '808080', 'FF0000', 'FF9900',
             '99CC00', '339966', '33CCCC', '3366FF', '800080', '999999', 'FF00FF', 'FFCC00',
             'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99',
             'FFFF99', 'CCFFFF', '99CCFF', 'FFFFFF'
-        ],
+        ],*/
 
         // If we want to simply add more colors to the default set, use addColors.
         addColors : []

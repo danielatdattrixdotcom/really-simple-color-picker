@@ -9,7 +9,7 @@ div.colorPicker-picker {
 }
 
 div.colorPicker-palette {
-  width: 110px;
+  width: 310px;
   position: absolute;
   border: 1px solid #598FEF;
   background-color: #EFEFEF;
@@ -19,6 +19,14 @@ div.colorPicker-palette {
   div.colorPicker_hexWrap label {font-size: 95%; color: #2F2F2F; margin: 5px 2px; width: 25%}
   div.colorPicker_hexWrap input {margin: 5px 2px; padding: 0; font-size: 95%; border: 1px solid #000; width: 65%; }
 
+div.colorPicker-swatches {
+    margin: none;
+    float: left;
+    display: block;
+    border: 1px solid #598FEF;
+    width: 308px;
+}
+
 div.colorPicker-swatch {
   height: 12px;
   width: 12px;
@@ -27,4 +35,28 @@ div.colorPicker-swatch {
   float: left;
   cursor: pointer;
   line-height: 12px;
+}
+
+div.colorPicker-tabs {
+    width: 310px;
+    margin: none;
+    float: left;
+    display: block;
+}
+
+div.colorPicker-tab {
+    border: 1px solid #C9D9F5;
+    border-bottom: none;
+    padding: 1px 5px;
+    text-align: center;
+    margin: none;
+    height: 18px;
+    border-collapse: collapse;
+    float: left;
+    cursor: pointer;
+}
+
+div.colorPicker-tab.active {
+    font-weight: bold;
+    border-color: #598FEF;
 }
