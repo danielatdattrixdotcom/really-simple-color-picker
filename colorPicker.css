@@ -9,7 +9,7 @@ div.colorPicker-picker {
 }
 
 div.colorPicker-palette {
-  width: 310px;
+  width: 710px;
   position: absolute;
   border: 1px solid #598FEF;
   background-color: #EFEFEF;
@@ -24,7 +24,7 @@ div.colorPicker-swatches {
     float: left;
     display: block;
     border: 1px solid #598FEF;
-    width: 308px;
+    width: 708px;
 }
 
 div.colorPicker-swatch {
@@ -43,7 +43,7 @@ div.transparentSwatch {
 }
 
 div.colorPicker-tabs {
-    width: 310px;
+    width: 710px;
     margin: none;
     float: left;
     display: block;
