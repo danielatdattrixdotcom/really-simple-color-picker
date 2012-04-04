@@ -33,13 +33,13 @@ div.colorPicker-swatches {
 }
 
 div.colorPicker-swatch {
-  height: 12px;
-  width: 12px;
+  height: 16px;
+  width: 16px;
   border: 1px solid #000;
   margin: 2px;
   float: left;
   cursor: pointer;
-  line-height: 12px;
+  line-height: 16px;
 }
 
 div.transparentSwatch {
