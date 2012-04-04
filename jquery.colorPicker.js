@@ -167,6 +167,7 @@
              * Build replacement interface for original color input.
             **/
             newControl.css("background-color", $.fn.colorPicker.toHex(defaultColor[1]));
+            newControl.attr('data-content',defaultColor[0]);
 
             newControl.bind("click", function () {
                 $.fn.colorPicker.togglePalette($('#' + paletteId), $(this));
@@ -178,6 +179,7 @@
                 element.next(".colorPicker-picker").css(
                     "background-color", $.fn.colorPicker.toHex($(this).attr("hexcolor"))
                 );
+                element.next(".colorPicker-picker").attr('data-content', element.val());
                 if (element.val() == transparent) {
                     element.next(".colorPicker-picker").addClass('transparentSwatch');
                 } else {

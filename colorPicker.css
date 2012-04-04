@@ -8,6 +8,11 @@ div.colorPicker-picker {
   line-height: 16px;
 }
 
+div.colorPicker-picker:after {
+    padding-left: 18px;
+    content: attr(data-content);
+}
+
 div.colorPicker-palette {
   width: 710px;
   position: absolute;
