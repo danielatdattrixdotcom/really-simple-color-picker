@@ -55,6 +55,7 @@
             hexField: $('<input type="text" id="colorPicker_hex" />')
         },
         transparent     = "CLEAR",
+        none = "None",
         lastColor,
         currentTab;
 
@@ -101,7 +102,6 @@
                         }
                     });
                 });
-
                 tab.appendTo(newTabs);
 
                 tab_colors = opts.tabs[i].colors;
@@ -112,22 +112,29 @@
 
                     if (this[0] === transparent) {
                         swatch.addClass('transparentSwatch');
-                        swatch.attr('colorstring',this[0]);
-
-                        $.fn.colorPicker.bindPalette(newHexField, swatch);
+                    } else if (this[0] == none) {
+                        swatch.addClass('noneSwatch');
                     } else {
                         swatch.css("background-color", "#" + this[1]);
-                        swatch.attr('colorstring',this[0]);
-
-                        $.fn.colorPicker.bindPalette(newHexField, swatch);
                     }
+
+                    swatch.attr('colorstring',this[0]);
+                    $.fn.colorPicker.bindPalette(newHexField, swatch);
 
                     if (this[0] == defaultColor[0]) {
                         currentTab = $(tab);
+                        defaultColor = this;
                     }
                     swatch.appendTo(newSwatches);
                 });
             });
+
+            if(currentTab === undefined) {
+                currentTab = newTabs.children().first();
+                newControl.addClass('add-color');
+            } else if (opts.pickerDefault === undefined) {
+                newControl.addClass('add-color');
+            }
 
             newSwatches.children().each(function(){
                  if (currentTab.text() == $(this).attr('tab')) {
@@ -174,6 +181,10 @@
             });
 
             element.after(newControl);
+
+            if (element.val() == transparent) {
+                newControl.addClass('transparentSwatch');
+            }
 
             element.bind("change", function () {
                 element.next(".colorPicker-picker").css(
@@ -302,7 +313,6 @@
         **/
         changeColor : function (value, hex_value) {
             selectorOwner.css("background-color", hex_value);
-
             if (value == transparent) {
                 selectorOwner.addClass('transparentSwatch');
             } else {

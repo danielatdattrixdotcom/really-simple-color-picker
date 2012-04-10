@@ -9,12 +9,21 @@ div.colorPicker-picker {
 }
 
 div.colorPicker-picker:after {
-    padding-left: 18px;
+    position: absolute;
+    left: 38px;
     content: attr(data-content);
 }
 
+div.add-color {
+    background-image: url(add_arrow.gif);
+}
+
+div.add-color:after {
+    content: "";
+}
+
 div.colorPicker-palette {
-  width: 710px;
+  width: 910px;
   position: absolute;
   border: 1px solid #598FEF;
   background-color: #EFEFEF;
@@ -29,7 +38,7 @@ div.colorPicker-swatches {
     float: left;
     display: block;
     border: 1px solid #598FEF;
-    width: 708px;
+    width: 908px;
 }
 
 div.colorPicker-swatch {
@@ -47,8 +56,13 @@ div.transparentSwatch {
     background: url(clear.png) repeat top left;
 }
 
+div.noneSwatch {
+    background-color: #FFFFFF;
+    background: url(none.png) repeat top left;
+}
+
 div.colorPicker-tabs {
-    width: 710px;
+    width: 910px;
     margin: none;
     float: left;
     display: block;
