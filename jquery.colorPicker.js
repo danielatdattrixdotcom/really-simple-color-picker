@@ -56,8 +56,7 @@
         },
         transparent     = "CLEAR",
         none = "None",
-        lastColor,
-        currentTab;
+        lastColor;
 
     /**
      * Create our colorPicker function
@@ -69,18 +68,21 @@
                 opts         = $.extend({}, $.fn.colorPicker.defaults, options),
                 defaultColor = (opts.pickerDefault) ? opts.pickerDefault : opts.tabs[0].colors[0],
                 newControl   = templates.control.clone(),
-                newTabs    = templates.tabs.clone(),
+                newTabs      = templates.tabs.clone(),
                 newSwatches  = templates.swatches.clone(),
                 newPalette   = templates.palette.clone().attr('id', 'colorPicker_palette-' + cItterate),
                 newHexLabel  = templates.hexLabel.clone(),
                 newHexField  = templates.hexField.clone(),
-                paletteId    = newPalette[0].id;
+                paletteId    = newPalette[0].id,
+                currentTab,
+                autocompleteColors = [];
 
             newTabs.appendTo(newPalette);
 
             $.each(opts.tabs, function (i) {
                 var tab = templates.tab.clone();
                 tab.text(opts.tabs[i].name);
+                tab.attr('pickerindex',i);
 
                 tab.bind('click', function() {
                     currentTab = $(this);
@@ -110,6 +112,8 @@
                     swatch = templates.swatch.clone();
                     swatch.attr('tab',tab.text());
 
+                    autocompleteColors.push(this[0]);
+
                     if (this[0] === transparent) {
                         swatch.addClass('transparentSwatch');
                     } else if (this[0] == none) {
@@ -121,7 +125,7 @@
                     swatch.attr('colorstring',this[0]);
                     $.fn.colorPicker.bindPalette(newHexField, swatch);
 
-                    if (this[0] == defaultColor[0]) {
+                    if (typeof currentTab == "undefined" && this[0] == defaultColor[0]) {
                         currentTab = $(tab);
                         defaultColor = this;
                     }
@@ -129,10 +133,10 @@
                 });
             });
 
-            if(currentTab === undefined) {
+            if(typeof currentTab == "undefined") {
                 currentTab = newTabs.children().first();
                 newControl.addClass('add-color');
-            } else if (opts.pickerDefault === undefined) {
+            } else if (typeof opts.pickerDefault == "undefined") {
                 newControl.addClass('add-color');
             }
 
@@ -155,11 +159,29 @@
                 'value' : defaultColor[0]
             });
 
-            newHexField.bind("keydown", function (event) {
+            newHexField.bind("keyup", function (event) {
                 if (event.keyCode === 27) {
                     $.fn.colorPicker.hidePalette(paletteId);
                 }
             });
+
+            newHexField.bind("click", function (event) {
+                $(this).select();
+            });
+
+            $(newHexField).autocompleteArray(autocompleteColors, {delay: 40, onItemSelect: function(e){
+                var acf = $(e).text();
+                for (var ti = 0; ti < opts.tabs.length; ti++) {
+                    for (var i = 0; i < opts.tabs[ti].colors.length; i++) {
+                        var swatch_color = opts.tabs[ti].colors[i][0];
+                        var swatch_hex = opts.tabs[ti].colors[i][1];
+                        if (acf == swatch_color) {
+                            $.fn.colorPicker.changeColor(swatch_color, swatch_hex);
+                            $.fn.colorPicker.hidePalette(paletteId);
+                        }
+                    }
+                }
+            }});
 
             $('<div class="colorPicker_hexWrap" />').append(newHexLabel).appendTo(newPalette);
 
